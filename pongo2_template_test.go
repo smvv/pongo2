@@ -107,32 +107,35 @@ func init() {
  */
 
 type variable struct {
-	Value int
+	Value float64
 }
 
 func (v *variable) String() string {
-	return strconv.Itoa(v.Value)
+	return fmt.Sprintf("%.0f", v.Value)
 }
 
-func getOperand(value interface{}) (int, error) {
+func getOperand(value interface{}) (float64, error) {
 	if i, ok := value.(*pongo2.Value); ok {
 		if i.IsInteger() {
-			return i.Integer(), nil
+			return float64(i.Integer()), nil
+		} else if i.IsFloat() {
+			return i.Float(), nil
 		} else if i.IsString() {
-			return strconv.Atoi(i.String())
+			return strconv.ParseFloat(i.String(), 64)
 		}
-	} else if i, ok := value.(int); ok {
-		return i, nil
+	} else if s, ok := value.(string); ok {
+		return strconv.ParseFloat(s, 64)
 	} else if i, ok := value.(*variable); ok {
 		return i.Value, nil
 	}
-	return 0, fmt.Errorf("unknown operand")
+
+	return 0, fmt.Errorf("unknown operand (%T)", value)
 }
 
 func (v *variable) Add(value interface{}) pongo2.Number {
 	o, err := getOperand(value)
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	return &variable{v.Value + o}
 }
@@ -140,7 +143,7 @@ func (v *variable) Add(value interface{}) pongo2.Number {
 func (v *variable) Sub(value interface{}) pongo2.Number {
 	o, err := getOperand(value)
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	return &variable{v.Value - o}
 }
@@ -148,7 +151,7 @@ func (v *variable) Sub(value interface{}) pongo2.Number {
 func (v *variable) Mul(value interface{}) pongo2.Number {
 	o, err := getOperand(value)
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	return &variable{v.Value * o}
 }
@@ -156,7 +159,7 @@ func (v *variable) Mul(value interface{}) pongo2.Number {
 func (v *variable) Div(value interface{}) pongo2.Number {
 	o, err := getOperand(value)
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	return &variable{v.Value / o}
 }
@@ -411,9 +414,11 @@ func TestTemplates(t *testing.T) {
 			optsStr, _ := ioutil.ReadFile(fmt.Sprintf("%s.options", match))
 			trimBlocks := strings.Contains(string(optsStr), "TrimBlocks=true")
 			lStripBlocks := strings.Contains(string(optsStr), "LStripBlocks=true")
+			forceFloat64 := strings.Contains(string(optsStr), "ForceFloat64=true")
 
 			tpl.Options.TrimBlocks = trimBlocks
 			tpl.Options.LStripBlocks = lStripBlocks
+			tpl.Options.ForceFloat64 = forceFloat64
 
 			testFilename := fmt.Sprintf("%s.out", match)
 			testOut, rerr := ioutil.ReadFile(testFilename)

@@ -154,6 +154,9 @@ func (s *stringResolver) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
 }
 
 func (i *intResolver) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
+	if ctx.template.Options.ForceFloat64 {
+		return AsValue(float64(i.val)), nil
+	}
 	return AsValue(i.val), nil
 }
 
