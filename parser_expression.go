@@ -257,6 +257,16 @@ func (expr *simpleExpression) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
 		}
 		switch expr.opToken.Val {
 		case "+":
+			if n1, ok := result.Interface().(Number); ok {
+				return AsValue(n1.Add(t2)), nil
+			} else if n2, ok := t2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(result)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", result), expr.GetPositionToken())
+				}
+				return AsValue(n1.Add(n2)), nil
+			}
+
 			if result.IsFloat() || t2.IsFloat() {
 				// Result will be a float
 				return AsValue(result.Float() + t2.Float()), nil
@@ -264,6 +274,16 @@ func (expr *simpleExpression) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
 			// Result will be an integer
 			return AsValue(result.Integer() + t2.Integer()), nil
 		case "-":
+			if n1, ok := result.Interface().(Number); ok {
+				return AsValue(n1.Sub(t2)), nil
+			} else if n2, ok := t2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(result)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", result), expr.GetPositionToken())
+				}
+				return AsValue(n1.Sub(n2)), nil
+			}
+
 			if result.IsFloat() || t2.IsFloat() {
 				// Result will be a float
 				return AsValue(result.Float() - t2.Float()), nil
@@ -290,6 +310,16 @@ func (expr *term) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
 		}
 		switch expr.opToken.Val {
 		case "*":
+			if n1, ok := f1.Interface().(Number); ok {
+				return AsValue(n1.Mul(f2)), nil
+			} else if n2, ok := f2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(f1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", f1), expr.GetPositionToken())
+				}
+				return AsValue(n1.Mul(n2)), nil
+			}
+
 			if f1.IsFloat() || f2.IsFloat() {
 				// Result will be float
 				return AsValue(f1.Float() * f2.Float()), nil
@@ -297,6 +327,15 @@ func (expr *term) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
 			// Result will be int
 			return AsValue(f1.Integer() * f2.Integer()), nil
 		case "/":
+			if n1, ok := f1.Interface().(Number); ok {
+				return AsValue(n1.Div(f2)), nil
+			} else if n2, ok := f2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(f1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", f1), expr.GetPositionToken())
+				}
+				return AsValue(n1.Div(n2)), nil
+			}
 			if f1.IsFloat() || f2.IsFloat() {
 				// Result will be float
 				return AsValue(f1.Float() / f2.Float()), nil

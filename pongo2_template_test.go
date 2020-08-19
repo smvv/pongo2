@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -105,8 +106,72 @@ func init() {
  * End setup sandbox
  */
 
+type variable struct {
+	Value int
+}
+
+func (v *variable) String() string {
+	return strconv.Itoa(v.Value)
+}
+
+func getOperand(value interface{}) (int, error) {
+	if i, ok := value.(*pongo2.Value); ok {
+		if i.IsInteger() {
+			return i.Integer(), nil
+		} else if i.IsString() {
+			return strconv.Atoi(i.String())
+		}
+	} else if i, ok := value.(int); ok {
+		return i, nil
+	} else if i, ok := value.(*variable); ok {
+		return i.Value, nil
+	}
+	return 0, fmt.Errorf("unknown operand")
+}
+
+func (v *variable) Add(value interface{}) pongo2.Number {
+	o, err := getOperand(value)
+	if err != nil {
+		return nil
+	}
+	return &variable{v.Value + o}
+}
+
+func (v *variable) Sub(value interface{}) pongo2.Number {
+	o, err := getOperand(value)
+	if err != nil {
+		return nil
+	}
+	return &variable{v.Value - o}
+}
+
+func (v *variable) Mul(value interface{}) pongo2.Number {
+	o, err := getOperand(value)
+	if err != nil {
+		return nil
+	}
+	return &variable{v.Value * o}
+}
+
+func (v *variable) Div(value interface{}) pongo2.Number {
+	o, err := getOperand(value)
+	if err != nil {
+		return nil
+	}
+	return &variable{v.Value / o}
+}
+
+func (v *variable) AsNumber(value interface{}) (pongo2.Number, error) {
+	o, err := getOperand(value)
+	if err != nil {
+		return nil, err
+	}
+	return &variable{o}, nil
+}
+
 var tplContext = pongo2.Context{
 	"number": 11,
+	"var":    &variable{Value: 12},
 	"simple": map[string]interface{}{
 		"number":                   42,
 		"name":                     "john doe",
