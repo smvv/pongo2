@@ -177,6 +177,16 @@ func (expr *relationalExpression) Evaluate(ctx *ExecutionContext) (*Value, *Erro
 		}
 		switch expr.opToken.Val {
 		case "<=":
+			if n1, ok := v1.Interface().(Number); ok {
+				return AsValue(n1.LessOrEqual(v2)), nil
+			} else if n2, ok := v2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(v1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", v1), expr.GetPositionToken())
+				}
+				return AsValue(n1.LessOrEqual(n2)), nil
+			}
+
 			if v1.IsFloat() || v2.IsFloat() {
 				return AsValue(v1.Float() <= v2.Float()), nil
 			}
@@ -186,6 +196,16 @@ func (expr *relationalExpression) Evaluate(ctx *ExecutionContext) (*Value, *Erro
 			}
 			return AsValue(v1.Integer() <= v2.Integer()), nil
 		case ">=":
+			if n1, ok := v1.Interface().(Number); ok {
+				return AsValue(n1.GreaterOrEqual(v2)), nil
+			} else if n2, ok := v2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(v1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", v1), expr.GetPositionToken())
+				}
+				return AsValue(n1.GreaterOrEqual(n2)), nil
+			}
+
 			if v1.IsFloat() || v2.IsFloat() {
 				return AsValue(v1.Float() >= v2.Float()), nil
 			}
@@ -195,8 +215,28 @@ func (expr *relationalExpression) Evaluate(ctx *ExecutionContext) (*Value, *Erro
 			}
 			return AsValue(v1.Integer() >= v2.Integer()), nil
 		case "==":
+			if n1, ok := v1.Interface().(Number); ok {
+				return AsValue(n1.Equal(v2)), nil
+			} else if n2, ok := v2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(v1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", v1), expr.GetPositionToken())
+				}
+				return AsValue(n1.Equal(n2)), nil
+			}
+
 			return AsValue(v1.EqualValueTo(v2)), nil
 		case ">":
+			if n1, ok := v1.Interface().(Number); ok {
+				return AsValue(n1.Greater(v2)), nil
+			} else if n2, ok := v2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(v1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", v1), expr.GetPositionToken())
+				}
+				return AsValue(n1.Greater(n2)), nil
+			}
+
 			if v1.IsFloat() || v2.IsFloat() {
 				return AsValue(v1.Float() > v2.Float()), nil
 			}
@@ -205,6 +245,16 @@ func (expr *relationalExpression) Evaluate(ctx *ExecutionContext) (*Value, *Erro
 			}
 			return AsValue(v1.Integer() > v2.Integer()), nil
 		case "<":
+			if n1, ok := v1.Interface().(Number); ok {
+				return AsValue(n1.Less(v2)), nil
+			} else if n2, ok := v2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(v1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", v1), expr.GetPositionToken())
+				}
+				return AsValue(n1.Less(n2)), nil
+			}
+
 			if v1.IsFloat() || v2.IsFloat() {
 				return AsValue(v1.Float() < v2.Float()), nil
 			}
@@ -213,6 +263,16 @@ func (expr *relationalExpression) Evaluate(ctx *ExecutionContext) (*Value, *Erro
 			}
 			return AsValue(v1.Integer() < v2.Integer()), nil
 		case "!=", "<>":
+			if n1, ok := v1.Interface().(Number); ok {
+				return AsValue(n1.NotEqual(v2)), nil
+			} else if n2, ok := v2.Interface().(Number); ok {
+				n1, err := n2.AsNumber(v1)
+				if err != nil {
+					return nil, ctx.Error(fmt.Sprintf("converting %v to number failed", v1), expr.GetPositionToken())
+				}
+				return AsValue(n1.NotEqual(n2)), nil
+			}
+
 			return AsValue(!v1.EqualValueTo(v2)), nil
 		case "in":
 			return AsValue(v2.Contains(v1)), nil

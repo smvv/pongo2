@@ -164,6 +164,71 @@ func (v *variable) Div(value interface{}) pongo2.Number {
 	return &variable{v.Value / o}
 }
 
+type compareType int
+
+const (
+	compareLess compareType = iota - 1
+	compareLessOrEqual
+	compareEqual
+	compareNotEqual
+	compareGreater
+	compareGreaterOrEqual
+)
+
+func (v *variable) Less(value interface{}) pongo2.Number {
+	return compareTwoValues(v, value, compareLess)
+}
+
+func (v *variable) LessOrEqual(value interface{}) pongo2.Number {
+	return compareTwoValues(v, value, compareLessOrEqual)
+}
+
+func (v *variable) Equal(value interface{}) pongo2.Number {
+	return compareTwoValues(v, value, compareEqual)
+}
+
+func (v *variable) NotEqual(value interface{}) pongo2.Number {
+	return compareTwoValues(v, value, compareNotEqual)
+}
+
+func (v *variable) Greater(value interface{}) pongo2.Number {
+	return compareTwoValues(v, value, compareGreater)
+}
+
+func (v *variable) GreaterOrEqual(value interface{}) pongo2.Number {
+	return compareTwoValues(v, value, compareGreaterOrEqual)
+}
+
+func compareTwoValues(v *variable, value interface{}, cmp compareType) pongo2.Number {
+	o, err := getOperand(value)
+	if err != nil {
+		panic(err)
+	}
+
+	var res bool
+
+	switch cmp {
+	case compareLess:
+		res = v.Value < o
+	case compareLessOrEqual:
+		res = v.Value <= o
+	case compareEqual:
+		res = v.Value == o
+	case compareNotEqual:
+		res = v.Value != o
+	case compareGreater:
+		res = v.Value > o
+	case compareGreaterOrEqual:
+		res = v.Value >= o
+	}
+
+	// Convert to variable (true) or nil (false).
+	if res {
+		return &variable{1}
+	}
+	return nil
+}
+
 func (v *variable) AsNumber(value interface{}) (pongo2.Number, error) {
 	o, err := getOperand(value)
 	if err != nil {
