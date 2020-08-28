@@ -13,5 +13,7 @@ type Number interface {
 	Greater(value interface{}) Number
 	GreaterOrEqual(value interface{}) Number
 
+	Bool() Number
+
 	AsNumber(value interface{}) (Number, error)
 }

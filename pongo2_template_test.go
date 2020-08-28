@@ -127,6 +127,9 @@ func getOperand(value interface{}) (float64, error) {
 		return strconv.ParseFloat(s, 64)
 	} else if i, ok := value.(*variable); ok {
 		return i.Value, nil
+	} else if i == nil {
+		// Allow nil as operand. See unary Bool().
+		return 0, nil
 	}
 
 	return 0, fmt.Errorf("unknown operand (%T)", value)
@@ -173,6 +176,7 @@ const (
 	compareNotEqual
 	compareGreater
 	compareGreaterOrEqual
+	compareBool
 )
 
 func (v *variable) Less(value interface{}) pongo2.Number {
@@ -199,6 +203,10 @@ func (v *variable) GreaterOrEqual(value interface{}) pongo2.Number {
 	return compareTwoValues(v, value, compareGreaterOrEqual)
 }
 
+func (v *variable) Bool() pongo2.Number {
+	return compareTwoValues(v, nil, compareBool)
+}
+
 func compareTwoValues(v *variable, value interface{}, cmp compareType) pongo2.Number {
 	o, err := getOperand(value)
 	if err != nil {
@@ -220,11 +228,13 @@ func compareTwoValues(v *variable, value interface{}, cmp compareType) pongo2.Nu
 		res = v.Value > o
 	case compareGreaterOrEqual:
 		res = v.Value >= o
+	case compareBool:
+		res = v.Value != 0
 	}
 
 	// Convert to variable (true) or nil (false).
 	if res {
-		return &variable{1}
+		return &variable{v.Value}
 	}
 	return nil
 }
@@ -240,6 +250,7 @@ func (v *variable) AsNumber(value interface{}) (pongo2.Number, error) {
 var tplContext = pongo2.Context{
 	"number": 11,
 	"var":    &variable{Value: 12},
+	"zero":   &variable{Value: 0},
 	"simple": map[string]interface{}{
 		"number":                   42,
 		"name":                     "john doe",

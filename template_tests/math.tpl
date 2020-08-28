@@ -20,3 +20,7 @@
 {% if var != '4' %}yes{% else %}no{% endif %}
 {% if var < '4' %}yes{% else %}no{% endif %}
 {% if var <= '4' %}yes{% else %}no{% endif %}
+
+# Unary
+{% if var %}yes{% else %}no{% endif %}
+{% if zero %}yes{% else %}no{% endif %}

@@ -444,6 +444,8 @@ func (vr *variableResolver) Evaluate(ctx *ExecutionContext) (*Value, *Error) {
 	value, err := vr.resolve(ctx)
 	if err != nil {
 		return AsValue(nil), ctx.Error(err.Error(), vr.locationToken)
+	} else if n1, ok := value.Interface().(Number); ok {
+		return AsValue(n1.Bool()), nil
 	}
 	return value, nil
 }
